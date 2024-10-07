@@ -3,116 +3,104 @@ import copy
 import heapq
 
 
-LOOKS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
-ROT = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
+NEIGHBORS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+ROT_COORDS = [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]
+ROTSATIONS = [2, 4, 6]
+
+RUIN_SIZE = 5
 
 
-def is_wrong_coord(x, y):
-    return x < 0 or 4 < x or y < 0 or 4 < y
+class Ruin():
+    def __init__(self, board=None):
+        if board is None:
+            self.board = [[0] * RUIN_SIZE for _ in range(RUIN_SIZE)]
+        else:
+            self.board = copy.deepcopy(board)
+        self.init_visit()
+    
+    def init_visit(self):
+        self.visit = [[False] * RUIN_SIZE for _ in range(RUIN_SIZE)]
+
+    def is_wrong_coord(self, x, y):
+        return x < 0 or 4 < x or y < 0 or 4 < y
+
+    def rotate(self, x, y, r):
+        assert r == 2 or r == 4 or r == 6
+        new_ruin = Ruin(self.board)
+        for idx, (ori_i, ori_j) in enumerate(ROT_COORDS):
+            rot_i, rot_j = ROT_COORDS[(idx + r) % 8]
+            new_ruin.board[x + rot_i][y + rot_j] = self.board[x + ori_i][y + ori_j]
+        return new_ruin
+    
+    def calc_score(self):
+        score = 0
+        for x in range(RUIN_SIZE):
+            for y in range(RUIN_SIZE):
+                if not self.visit[x][y]:
+                    self.visit[x][y] = True
+                    q = collections.deque([(x, y)])
+                    trace = collections.deque([(x, y)])
+                    while q:
+                        cur = q.popleft()
+                        for n in NEIGHBORS:
+                            nx, ny = cur[0] + n[0], cur[1] + n[1]
+                            if not self.is_wrong_coord(nx, ny) and self.board[nx][ny] == self.board[x][y] and not self.visit[nx][ny]:
+                                q.append((nx, ny))
+                                trace.append((nx, ny))
+                                self.visit[nx][ny] = True
+                    if len(trace) >= 3:
+                        score += len(trace)
+                        while (trace):
+                            t = trace.popleft()
+                            self.board[t[0]][t[1]] = 0
+        return score
+    
+    def fill(self, que):
+        for y in range(5):
+            for x in range(4, -1, -1):
+                if self.board[x][y] == 0:
+                    self.board[x][y] = que.popleft()
+
+    def chain(self, que):
+        score = 0
+        while True:
+            self.init_visit()
+            cur_score = self.calc_score()
+            if cur_score == 0:
+                break
+            score += cur_score
+            self.fill(que)
+        return score
 
 
-def is_right_center(x, y):
-    return 0 < x < 4 and 0 < y < 4
-
-
-def make_check_board(board):
-    check_board = [[0] * 5 for i in range(5)]
-    is_unchecked = 1
-    for i in range(5):
-        for j in range(5):
-            if (check_board[i][j] == 1):
-                for l in LOOKS:
-                    if is_wrong_coord(i + l[0], j + l[1]):
-                        continue
-                    if (board[i + l[0]][j + l[1]] == board[i][j]):
-                        check_board[i + l[0]][j + l[1]] = 1
-            else:
-                same = 0
-                for l in LOOKS:
-                    if is_wrong_coord(i + l[0], j + l[1]):
-                        continue
-                    if (board[i + l[0]][j + l[1]] == board[i][j]):
-                        same += 1
-                if same >= 2:
-                    is_unchecked = 0
-                    check_board[i][j] = 1
-                    for l in LOOKS:
-                        if is_wrong_coord(i + l[0], j + l[1]):
-                            continue
-                        if (board[i + l[0]][j + l[1]] == board[i][j]):
-                            check_board[i + l[0]][j + l[1]] = 1
-    return check_board, is_unchecked
-
-
-def calc_score(board):
-    check_board, is_unchecked = make_check_board(board)
-    if is_unchecked:
-        return 0
-    score = 0
-    for i in range(5):
-        for j in range(5):
-            if check_board[i][j] == 1:
-                score += 1
-    return score
-
-
-def make_rotated_board(board, x, y, rot):
-    assert rot == 2 or rot == 4 or rot == 6
-    new_board = copy.deepcopy(board)
-    for i, (ori_i, ori_j) in enumerate(ROT):
-        rot_i, rot_j = ROT[(i + rot) % 8]
-        new_board[x + rot_i][y + rot_j] = board[x + ori_i][y + ori_j]
-    return new_board
-
-
-def make_final_selected_board(board):
+def rotation_stage(ruin):
     max_score = 0
-    selected_board = None
+    selected_ruin = None
     for r in [2, 4, 6]:
         for y in range(1, 4):
             for x in range(1, 4):
-                new_board = make_rotated_board(board, x, y, r)
-                score = calc_score(new_board)
+                new_ruin = ruin.rotate(x, y, r)
+                score = new_ruin.calc_score()
                 if score > max_score:
                     max_score = score
-                    selected_board = new_board
-    return selected_board
-
-
-def do_update(board, check_board, buff):
-    score = 0
-    for j in range(5):
-        for i in range(4, -1, -1):
-            if check_board[i][j] == 1:
-                score += 1
-                board[i][j] = buff.popleft()
-    return score
-
-
-def chain_rule(board, buff):
-    final_score = 0
-    while True:
-        check_board, is_unchecked = make_check_board(board)
-        if is_unchecked:
-            break
-        score = do_update(board, check_board, buff)
-        final_score += score
-    return final_score
+                    selected_ruin = new_ruin
+    return max_score, selected_ruin
 
 
 def main():
     k, m = map(int, input().split())
     initial_board = [list(map(int, input().split())) for i in range(5)]
+    ruin = Ruin(initial_board)
     buff = collections.deque(map(int, input().split()))
-    current_board = initial_board
-    score = []
+    log = []
     for i in range(k):
-        selected_board = make_final_selected_board(current_board)
-        if selected_board == None:
+        score, ruin = rotation_stage(ruin)
+        if score == 0:
             break
-        score.append(f"{chain_rule(selected_board, buff)}")
-        current_board = selected_board
-    print(" ".join(score))
+        ruin.fill(buff)
+        score += ruin.chain(buff)
+        log.append(f"{score}")
+    print(" ".join(log))
 
 
 if __name__ == '__main__':
