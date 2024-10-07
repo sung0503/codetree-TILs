@@ -67,10 +67,10 @@ class Tour():
         #         continue
         #     new_heap.append((self.cost[self.products[idx][1]] - self.products[idx][0], idx))
         for i in range(len(self.minheap)):
-            if self.products[idx] is None:
-                self.minheap[i] = (MAX_INT, idx)
+            if self.products[self.minheap[i][1]] is None:
+                self.minheap[i] = (MAX_INT, self.minheap[i][1])
             else:
-                self.minheap[i] = (self.cost[self.products[idx][1]] - self.products[idx][0], idx)
+                self.minheap[i] = (self.cost[self.products[self.minheap[i][1]][1]] - self.products[self.minheap[i][1]][0], self.minheap[i][1])
         # heapq.heapify(new_heap)
         # self.minheap = new_heap
         heapq.heapify(self.minheap)
