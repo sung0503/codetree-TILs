@@ -48,16 +48,13 @@ class Tour():
         self.product_ids.discard(idx)
     
     def sell(self):
-        while True:
-            if not self.minheap or self.minheap[0][0] > 0:
-                print(-1)
-                return
+        while self.minheap:
             m_p, idx = heapq.heappop(self.minheap)
             if idx in self.product_ids:
-            # if self.products[idx] is not None:
-                break
-        print(idx)
-        self.product_ids.discard(idx)
+                print(idx)
+                self.product_ids.discard(idx)
+                return
+        print(-1)
 
     def change_src(self, src):
         self.update_cost(src)
