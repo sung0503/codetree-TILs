@@ -39,11 +39,8 @@ class Tour():
                 return
     
     def sell(self):
-        if not self.minheap or self.minheap[0][0] > 0:
-            print(-1)
-            return
         while True:
-            if self.minheap[0][0] > 0:
+            if not self.minheap or self.minheap[0][0] > 0:
                 print(-1)
                 return
             m_p, idx = heapq.heappop(self.minheap)
