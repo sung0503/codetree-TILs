@@ -61,13 +61,19 @@ class Tour():
 
     def change_src(self, src):
         self.update_cost(src)
-        new_heap = []
-        for m_p, idx in self.minheap:
+        # new_heap = []
+        # for m_p, idx in self.minheap:
+        #     if self.products[idx] is None:
+        #         continue
+        #     new_heap.append((self.cost[self.products[idx][1]] - self.products[idx][0], idx))
+        for i in range(len(self.minheap)):
             if self.products[idx] is None:
-                continue
-            new_heap.append((self.cost[self.products[idx][1]] - self.products[idx][0], idx))
-        heapq.heapify(new_heap)
-        self.minheap = new_heap
+                self.minheap[i] = (MAX_INT, idx)
+            else:
+                self.minheap[i] = (self.cost[self.products[idx][1]] - self.products[idx][0], idx)
+        # heapq.heapify(new_heap)
+        # self.minheap = new_heap
+        heapq.heapify(self.minheap)
 
 
 def main():
