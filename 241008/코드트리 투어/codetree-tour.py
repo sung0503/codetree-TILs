@@ -1,100 +1,98 @@
 import heapq
-from collections import defaultdict
 
-INF = float('inf')
-n, m = 0, 0
-adj = []
-cost = []
-item_dict = defaultdict(int)
 
-class Item:
-    def __init__(self, item_id, revenue, dest):
-        self.item_id = item_id
-        self.revenue = revenue
-        self.dest = dest
-        self.profit = 0
+MAX_INT = 2**31 - 1
 
-        self.update_profit()
 
-    def __lt__(self, other):
-        if self.profit == other.profit:
-            return self.item_id < other.item_id
-        return self.profit > other.profit
+class Tour():
+    def __init__(self, n, m, arr):
+        self.n = n
+        self.m = m
+        self.connection = [[] for _ in range(n)]
+        for i in range(m):
+            s, d, w = arr[i*3], arr[i*3 + 1], arr[i*3 + 2]
+            self.connection[s].append((d, w))
+            self.connection[d].append((s, w))
+        self.cost = []
+        self.update_cost(0)
+        self.products = {}
+        self.minheap = []
+        self.product_ids = set()
 
-    def update_profit(self):
-        # revenue - cost
-        global cost
-        if cost[self.dest] == INF:
-            self.profit = -1
-        else:
-            self.profit = self.revenue - cost[self.dest]
+    def update_cost(self, src):
+        self.cost = [MAX_INT] * self.n
+        self.cost[src] = 0
+        pq = [(0, src)]
+        while pq:
+            cur_cost, cur = heapq.heappop(pq)
+            if cur_cost > self.cost[cur]:
+                continue
+            for nxt, w in self.connection[cur]:
+                nxt_cost = self.cost[cur] + w
+                if nxt_cost < self.cost[nxt]:
+                    self.cost[nxt] = nxt_cost
+                    heapq.heappush(pq, (nxt_cost, nxt))
 
-def dijkstra(start):
-    global n, cost, adj
-    cost = [INF] * n
-    cost[start] = 0
-    pq = [(0, start)]
+        # while (sum(visit) < self.n - 1): #when last
+        #     visit[cur] = True
+        #     buff = []
+        #     for i in range(self.n):
+        #         if not visit[i]:
+        #             if self.cost[i] > self.cost[cur] + self.connection[cur][i]:
+        #                 self.cost[i] = self.cost[cur] + self.connection[cur][i]
+        #             heapq.heappush(buff, (self.cost[i], i))
+        #     _c, cur = heapq.heappop(buff)
 
-    while pq:
-        cur_cost, cur = heapq.heappop(pq)
-        if cur_cost > cost[cur]:
-            continue
-        for nxt, w in adj[cur]:
-            nxt_cost = cost[cur] + w
-            if nxt_cost < cost[nxt]:
-                cost[nxt] = nxt_cost
-                heapq.heappush(pq, (nxt_cost, nxt))
+    def new_product(self, idx, rev, dst):
+        profit = rev - self.cost[dst]
+        self.products[idx] = (rev, dst)
+        self.product_ids.add(idx)
+        if profit >= 0:
+            heapq.heappush(self.minheap, (-profit, idx))
+    
+    def cancel(self, idx):
+        self.product_ids.discard(idx)
+    
+    def sell(self):
+        while self.minheap:
+            m_p, idx = heapq.heappop(self.minheap)
+            if idx in self.product_ids:
+                print(idx)
+                self.product_ids.discard(idx)
+                return
+        print(-1)
 
-def sell(pq):
-    global item_dict
+    def change_src(self, src):
+        self.update_cost(src)
+        self.minheap = []
+        for idx in self.product_ids:
+            profit = self.products[idx][0] - self.cost[self.products[idx][1]]
+            if profit >= 0:
+                # heapq.heappush(self.minheap, (-profit, idx))
+                self.minheap.append((-profit, idx))
+        heapq.heapify(self.minheap)
 
-    while pq:
-        if pq[0].profit < 0:
-            break
-        item = heapq.heappop(pq)
-        if item_dict[item.item_id] == 1:
-            return item.item_id
-    return -1
-
-def update_item(pq):
-    global cost
-    for i in range(len(pq)):
-        pq[i].update_profit()
-    heapq.heapify(pq)
 
 def main():
-    global Q, n, m, adj, cost, item_dict
     Q = int(input())
-    cmds = list(map(int, input().split()))
-    n, m = cmds[1], cmds[2]
-    adj = [[] for _ in range(n)]
-    for i in range(3, len(cmds), 3):
-        v, u, w = cmds[i:i + 3]
-        adj[v].append((u, w))
-        adj[u].append((v, w))
+    tour = None
+    for i in range(Q):
+        data = list(map(int, input().split()))
+        if data[0] == 100:
+            tour = Tour(data[1], data[2], data[3:])
+        elif data[0] == 200:
+            tour.new_product(data[1], data[2], data[3])
+        elif data[0] == 300:
+            tour.cancel(data[1])
+        elif data[0] == 400:
+            tour.sell()
+        elif data[0] == 500:
+            tour.change_src(data[1])
+        else:
+            print("ERROR")
+        # print(tour.cost)
+        # print(tour.minheap)
 
-    dijkstra(0)
-    pq_item = []
-
-    for _ in range(Q - 1):
-        cmd = list(map(int, input().split()))
-        if cmd[0] == 200:
-            _, item_id, revenue, dest = cmd
-            item = Item(item_id, revenue, dest)
-            heapq.heappush(pq_item, item)
-            item_dict[item_id] = 1
-                
-        elif cmd[0] == 300:
-            _, item_id = cmd
-            item_dict[item_id] = 0
-        elif cmd[0] == 400:
-            ret = sell(pq_item)
-            print(ret)
-        elif cmd[0] == 500:
-            _, s = cmd
-            dijkstra(s)
-            update_item(pq_item)
-        #print(item_dict)
 
 if __name__ == '__main__':
     main()
