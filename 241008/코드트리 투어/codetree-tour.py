@@ -65,7 +65,9 @@ class Tour():
         for idx in self.product_ids:
             profit = self.products[idx][0] - self.cost[self.products[idx][1]]
             if profit >= 0:
-                heapq.heappush(self.minheap, (-profit, idx))
+                # heapq.heappush(self.minheap, (-profit, idx))
+                self.minheap.append((-profit, idx))
+        heapq.heapify(self.minheap)
 
 
 def main():
