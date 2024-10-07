@@ -21,6 +21,7 @@ class Tour():
         self.update_cost(0)
         self.products = defaultdict(lambda : None)
         self.minheap = []
+        self.product_ids = set()
 
     def update_cost(self, src):
         self.cost = [MAX_INT] * self.n
@@ -40,14 +41,13 @@ class Tour():
     def new_product(self, idx, rev, dst):
         profit = rev - self.cost[dst]
         self.products[idx] = (rev, dst)
-        heapq.heappush(self.minheap, (-profit, idx))
+        self.product_ids.add(idx)
+        if profit >= 0:
+            heapq.heappush(self.minheap, (-profit, idx))
     
     def cancel(self, idx):
         self.products[idx] = None
-        # for i, p in enumerate(self.minheap):
-        #     if p[1] == idx:
-        #         self.minheap[i] = (p[0], -1) #removed flag
-        #         return
+        self.product_ids.discard(idx)
     
     def sell(self):
         while True:
@@ -58,22 +58,15 @@ class Tour():
             if self.products[idx] is not None:
                 break
         print(idx)
+        self.cancel(idx)
 
     def change_src(self, src):
         self.update_cost(src)
-        # new_heap = []
-        # for m_p, idx in self.minheap:
-        #     if self.products[idx] is None:
-        #         continue
-        #     new_heap.append((self.cost[self.products[idx][1]] - self.products[idx][0], idx))
-        for i in range(len(self.minheap)):
-            if self.products[self.minheap[i][1]] is None:
-                self.minheap[i] = (MAX_INT, self.minheap[i][1])
-            else:
-                self.minheap[i] = (self.cost[self.products[self.minheap[i][1]][1]] - self.products[self.minheap[i][1]][0], self.minheap[i][1])
-        # heapq.heapify(new_heap)
-        # self.minheap = new_heap
-        heapq.heapify(self.minheap)
+        self.minheap = []
+        for idx in self.product_ids:
+            profit = self.products[idx][0] - self.cost[self.products[idx][1]]
+            if profit >= 0:
+                heapq.heappush(self.minheap, (-profit, idx))
 
 
 def main():
