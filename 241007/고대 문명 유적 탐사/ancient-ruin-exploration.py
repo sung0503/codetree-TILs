@@ -66,18 +66,17 @@ def make_rotated_board(board, x, y, rot):
 
 
 def make_final_selected_board(board):
-    candidate_pool = []
-    for x in range(1, 4):
+    max_score = 0
+    selected_board = None
+    for r in [2, 4, 6]:
         for y in range(1, 4):
-            for r in [2, 4, 6]:
+            for x in range(1, 4):
                 new_board = make_rotated_board(board, x, y, r)
                 score = calc_score(new_board)
-                if score != 0:
-                    heapq.heappush(candidate_pool, (-score, r, y, x, new_board))
-    if candidate_pool:
-        return candidate_pool[0][4]
-    else:
-        return None
+                if score > max_score:
+                    max_score = score
+                    selected_board = new_board
+    return selected_board
 
 
 def do_update(board, check_board, buff):
