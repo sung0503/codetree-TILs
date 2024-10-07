@@ -1,4 +1,3 @@
-from collections import defaultdict
 import heapq
 
 
@@ -19,7 +18,7 @@ class Tour():
                 self.connection[d][s] = w
         self.cost = [MAX_INT] * n
         self.update_cost(0)
-        self.products = defaultdict(lambda : None)
+        self.products = {}
         self.minheap = []
         self.product_ids = set()
 
@@ -46,7 +45,6 @@ class Tour():
             heapq.heappush(self.minheap, (-profit, idx))
     
     def cancel(self, idx):
-        self.products[idx] = None
         self.product_ids.discard(idx)
     
     def sell(self):
@@ -55,10 +53,11 @@ class Tour():
                 print(-1)
                 return
             m_p, idx = heapq.heappop(self.minheap)
-            if self.products[idx] is not None:
+            if idx in self.product_ids:
+            # if self.products[idx] is not None:
                 break
         print(idx)
-        self.cancel(idx)
+        self.product_ids.discard(idx)
 
     def change_src(self, src):
         self.update_cost(src)
