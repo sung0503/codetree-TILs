@@ -1,3 +1,4 @@
+from collections import defaultdict
 import heapq
 
 
@@ -19,36 +20,45 @@ class Tour():
             for src in range(n):
                 for dst in range(n):
                     self.connection[src][dst] = min(self.connection[src][dst], self.connection[src][k] + self.connection[k][dst])
-        self.products = []
+        self.products = defaultdict(lambda : None)
+        self.minheap = []
 
     def cost(self, dst):
         return self.connection[self.src][dst]
 
     def new_product(self, idx, rev, dst):
         profit = rev - self.cost(dst)
-        heapq.heappush(self.products, (-profit, idx, rev, dst))
+        self.products[idx] = (rev, dst)
+        heapq.heappush(self.minheap, (-profit, idx))
     
     def cancel(self, idx):
-        for p in self.products:
+        self.products[idx] = None
+        for i, p in enumerate(self.minheap):
             if p[1] == idx:
-                self.products.remove(p)
-                heapq.heapify(self.products)
+                self.minheap[i] = (p[0], -1) #removed flag
                 return
     
     def sell(self):
-        if not self.products or self.products[0][0] > 0:
+        if not self.minheap or self.minheap[0][0] > 0:
             print(-1)
             return
-        m_p, idx, rev, dst = heapq.heappop(self.products)
+        while True:
+            if self.minheap[0][0] > 0:
+                print(-1)
+                return
+            m_p, idx = heapq.heappop(self.minheap)
+            if idx != -1:
+                self.products[idx] = None
+                break
         print(idx)
 
     def change_src(self, src):
         self.src = src
-        new_products = []
-        for p, idx, rev, dst in self.products:
-            new_products.append((self.cost(dst) - rev, idx, rev, dst))
-        heapq.heapify(new_products)
-        self.products = new_products
+        new_heap = []
+        for m_p, idx in self.minheap:
+            new_heap.append((self.cost(self.products[idx][1]) - self.products[idx][0], idx))
+        heapq.heapify(new_heap)
+        self.minheap = new_heap
 
 
 def main():
@@ -68,6 +78,8 @@ def main():
             tour.change_src(data[1])
         else:
             print("ERROR")
+        # print(tour.products)
+        # print(tour.minheap)
 
 
 if __name__ == '__main__':
