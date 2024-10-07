@@ -7,7 +7,8 @@ MAX_INT = 2**31 - 1
 
 class Tour():
     def __init__(self, n, m, arr):
-        self.src = 0
+        self.n = n
+        self.m = m
         self.connection = [[MAX_INT] * n for _ in range(n)]
         for i in range(n):
             self.connection[i][i] = 0
@@ -16,18 +17,28 @@ class Tour():
             if w < self.connection[s][d]:
                 self.connection[s][d] = w
                 self.connection[d][s] = w
-        for k in range(n):
-            for src in range(n):
-                for dst in range(n):
-                    self.connection[src][dst] = min(self.connection[src][dst], self.connection[src][k] + self.connection[k][dst])
+        self.cost = [MAX_INT] * n
+        self.update_cost(0)
         self.products = defaultdict(lambda : None)
         self.minheap = []
 
-    def cost(self, dst):
-        return self.connection[self.src][dst]
+    def update_cost(self, src):
+        self.cost = [MAX_INT] * self.n
+        visit = [False for _ in range(self.n)]
+        cur = src
+        self.cost[src] = 0
+        while (sum(visit) < self.n - 1): #when last
+            visit[cur] = True
+            buff = []
+            for i in range(self.n):
+                if not visit[i]:
+                    if self.cost[i] > self.cost[cur] + self.connection[cur][i]:
+                        self.cost[i] = self.cost[cur] + self.connection[cur][i]
+                    heapq.heappush(buff, (self.cost[i], i))
+            _c, cur = heapq.heappop(buff)
 
     def new_product(self, idx, rev, dst):
-        profit = rev - self.cost(dst)
+        profit = rev - self.cost[dst]
         self.products[idx] = (rev, dst)
         heapq.heappush(self.minheap, (-profit, idx))
     
@@ -50,12 +61,12 @@ class Tour():
         print(idx)
 
     def change_src(self, src):
-        self.src = src
+        self.update_cost(src)
         new_heap = []
         for m_p, idx in self.minheap:
             if idx == -1:
                 continue
-            new_heap.append((self.cost(self.products[idx][1]) - self.products[idx][0], idx))
+            new_heap.append((self.cost[self.products[idx][1]] - self.products[idx][0], idx))
         heapq.heapify(new_heap)
         self.minheap = new_heap
 
@@ -77,7 +88,7 @@ def main():
             tour.change_src(data[1])
         else:
             print("ERROR")
-        # print(tour.products)
+        # print(tour.cost)
         # print(tour.minheap)
 
 
