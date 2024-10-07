@@ -56,6 +56,8 @@ class Tour():
         self.src = src
         new_heap = []
         for m_p, idx in self.minheap:
+            if idx == -1:
+                continue
             new_heap.append((self.cost(self.products[idx][1]) - self.products[idx][0], idx))
         heapq.heapify(new_heap)
         self.minheap = new_heap
