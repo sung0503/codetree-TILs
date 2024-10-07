@@ -1,5 +1,3 @@
-from collections import deque
-from collections import defaultdict
 import heapq
 
 
@@ -22,7 +20,6 @@ class Tour():
                 for dst in range(n):
                     self.connection[src][dst] = min(self.connection[src][dst], self.connection[src][k] + self.connection[k][dst])
         self.products = []
-        self.status = defaultdict(lambda : True)
 
     def cost(self, dst):
         return self.connection[self.src][dst]
@@ -32,28 +29,24 @@ class Tour():
         heapq.heappush(self.products, (-profit, idx, rev, dst))
     
     def cancel(self, idx):
-        self.status[idx] = False
+        for p in self.products:
+            if p[1] == idx:
+                self.products.remove(p)
+                heapq.heapify(self.products)
+                return
     
     def sell(self):
-        if not self.products:
+        if not self.products or self.products[0][0] > 0:
             print(-1)
             return
-        while True:
-            if self.products[0][0] > 0:
-                print(-1)
-                return
-            m_p, idx, rev, dst = heapq.heappop(self.products)
-            if self.status[idx] is True:
-                break
-        self.status[idx] = False
+        m_p, idx, rev, dst = heapq.heappop(self.products)
         print(idx)
 
     def change_src(self, src):
         self.src = src
         new_products = []
         for p, idx, rev, dst in self.products:
-            if self.status[idx]:
-                new_products.append((self.cost(dst) - rev, idx, rev, dst))
+            new_products.append((self.cost(dst) - rev, idx, rev, dst))
         heapq.heapify(new_products)
         self.products = new_products
 
