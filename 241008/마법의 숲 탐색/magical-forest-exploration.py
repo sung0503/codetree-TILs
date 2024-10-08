@@ -47,6 +47,8 @@ class Forest():
             return self.R
         max_value = r_core - 1
         stack = deque([door])
+        visit = [[False] * self.C for _ in range(self.R + 3)]
+        visir[door[0]][door[1]] = True
         while stack:
             # print(stack)
             # print(self.dic)
@@ -54,8 +56,9 @@ class Forest():
             door = stack.pop()
             r, c = door
             for i, j in DIRECT:
-                if self.board[r + i][c + j] == door or self.is_empty(r + i, c + j): # if in same block or just empty block
+                if visit[r+i][c+j] and self.board[r + i][c + j] == door or self.is_empty(r + i, c + j): # if in same block or just empty block
                     continue
+                visit[r+i][c+j] = True
                 stack.append(self.board[r + i][c + j])
             max_value = max(max_value, self.dic[door])
         return max_value
