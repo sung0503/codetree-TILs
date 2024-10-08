@@ -1,19 +1,24 @@
+from collections import defaultdict
 from collections import deque
 
 DIRECT = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 
-class Forest():
+
+class Forest:
     def __init__(self, r, c):
         self.R = r
         self.C = c
         self.board = []
-        self.dic = {}
-        self.clear()
+        self.robots = {}
+        self.score = {}
         self.count = 0
+        self.clear()
 
     def clear(self):
         self.board = [[None] * self.C for _ in range(self.R + 3)]
-        self.dic = {}
+        self.robots = {}
+        self.score = {}
+        self.count = 0
 
     def is_reached_bottom(self, r_core):
         return r_core == self.R + 1
@@ -25,41 +30,67 @@ class Forest():
         return self.board[r][c] is None
 
     def able_down(self, r_core, c_core):
-        return r_core < self.R + 1 and self.is_empty(r_core + 2, c_core) and self.is_empty(r_core + 1, c_core - 1) and self.is_empty(r_core + 1, c_core + 1)
+        return (
+            r_core < self.R + 1
+            and self.is_empty(r_core + 2, c_core)
+            and self.is_empty(r_core + 1, c_core - 1)
+            and self.is_empty(r_core + 1, c_core + 1)
+        )
 
     def able_left_down(self, r_core, c_core):
-        return 1 < c_core and self.is_empty(r_core, c_core - 2) and self.is_empty(r_core + 1, c_core - 1) and self.is_empty(r_core - 1, c_core - 1) \
-                and self.is_empty(r_core + 1, c_core - 2) and self.is_empty(r_core + 2, c_core - 1)
+        return (
+            1 < c_core
+            and self.is_empty(r_core, c_core - 2)
+            and self.is_empty(r_core + 1, c_core - 1)
+            and self.is_empty(r_core - 1, c_core - 1)
+            and self.is_empty(r_core + 1, c_core - 2)
+            and self.is_empty(r_core + 2, c_core - 1)
+        )
 
     def able_right_down(self, r_core, c_core):
-        return c_core < self.C - 2 and self.is_empty(r_core, c_core + 2) and self.is_empty(r_core + 1, c_core + 1) and self.is_empty(r_core - 1, c_core + 1) \
-                and self.is_empty(r_core + 1, c_core + 2) and self.is_empty(r_core + 2, c_core + 1)
-    
+        return (
+            c_core < self.C - 2
+            and self.is_empty(r_core, c_core + 2)
+            and self.is_empty(r_core + 1, c_core + 1)
+            and self.is_empty(r_core - 1, c_core + 1)
+            and self.is_empty(r_core + 1, c_core + 2)
+            and self.is_empty(r_core + 2, c_core + 1)
+        )
+
     def update_board(self, r_core, c_core, d_core, reached_bottom=None):
         global DIRECT
 
         self.count += 1
+        cur_robot = self.count
 
-        door = (r_core + DIRECT[d_core][0], c_core + DIRECT[d_core][1])
-        self.board[r_core][c_core] = door
-        self.dic[door] = r_core - 1
+        self.robots[cur_robot] = (r_core, c_core, d_core)
+        self.board[r_core][c_core] = cur_robot
         for i, j in DIRECT:
-            self.board[r_core + i][c_core + j] = door
-        
+            self.board[r_core + i][c_core + j] = cur_robot
+        self.score[cur_robot] = min(self.R, r_core - 1)
+
         if reached_bottom:
-            return self.R
-        
-        init_val = r_core - 1
-        visit = [[False] * self.C for _ in range(self.R + 3)]
-        return self.dfs(*door, visit, init_val)
-    
-    def dfs(self, r, c, visit, init_val):
-        visit[r][c] = True
-        res = init_val
+            return self.score[cur_robot]
+
+        visit = [False] * (self.count + 1)
+        return max(self.score[cur_robot], self.dfs(cur_robot, visit))
+
+    def dfs(self, cur_robot, visit):
+        visit[cur_robot] = True
+        r_core, c_core, d_core = self.robots[cur_robot]
+        r_door, c_door = r_core + DIRECT[d_core][0], c_core + DIRECT[d_core][1]
+        res = self.score[cur_robot]
         for i, j in DIRECT:
-            if self.is_empty(r + i, c + j) and self.board[r + i][c + j] == (r, c) and visit[r+i][c+j]:
+            n_r, n_c = r_door + i, c_door + j
+            if not self.is_valid_idx(n_r, n_c):
                 continue
-            res = max(res, self.dfs(r+i, c+j, visit, init_val))
+            if self.is_empty(n_r, n_c):
+                continue
+            if self.board[n_r][n_c] == cur_robot:
+                continue
+            if visit[self.board[n_r][n_c]]:
+                continue
+            res = max(res, self.dfs(self.board[n_r][n_c], visit))
         return res
 
     def explore(self, c_i, d_i):
@@ -100,21 +131,21 @@ class Forest():
                 # update board and return robot's reachable maximum row.
                 return self.update_board(r_core, c_core, d_core)
 
+
 def main():
     R, C, K = map(int, input().split())
     reseult = 0
     forest = Forest(R, C)
     # for i in forest.board:
-    #     print(i)
+        # print(i)
     for k in range(K):
         c_i, d_i = map(int, input().split())
         reseult += forest.explore(c_i - 1, d_i)
         # print(reseult)
-        # print(forest.dic)
         # for i in forest.board:
         #     print(i)
     print(reseult)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
