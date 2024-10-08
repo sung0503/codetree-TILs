@@ -7,10 +7,13 @@ class Forest():
         self.R = r
         self.C = c
         self.board = []
-        self.clear_borad()
+        self.dic = {}
+        self.clear()
+        self.count = 0
 
-    def clear_borad(self):
-        self.board = [[-1] * self.C for _ in range(self.R + 3)]
+    def clear(self):
+        self.board = [[None] * self.C for _ in range(self.R + 3)]
+        self.dic = {}
 
     def is_reached_bottom(self, r_core):
         return r_core == self.R + 1
@@ -19,8 +22,7 @@ class Forest():
         return 0 <= r <= self.R + 2 and 0 <= c < self.C
 
     def is_empty(self, r, c):
-        # return self.is_valid_idx(r, c) and self.board[r][c] == -1.
-        return self.board[r][c] == -1.
+        return self.board[r][c] is None
 
     def able_down(self, r_core, c_core):
         return r_core < self.R + 1 and self.is_empty(r_core + 2, c_core) and self.is_empty(r_core + 1, c_core - 1) and self.is_empty(r_core + 1, c_core + 1)
@@ -35,20 +37,27 @@ class Forest():
     
     def update_board(self, r_core, c_core, d_core, reached_bottom=None):
         global DIRECT
+        self.count += 1
+        door = (r_core + DIRECT[d_core][0], c_core + DIRECT[d_core][1])
+        self.board[r_core][c_core] = door
+        self.dic[door] = r_core - 1
+        for i, j in DIRECT:
+            self.board[r_core + i][c_core + j] = door
         if reached_bottom:
-            self.board[r_core][c_core] = self.R
-            for i, j in DIRECT:
-                self.board[r_core + i][c_core + j] = self.R
             return self.R
         max_value = r_core - 1
-        r_door, c_door = r_core + DIRECT[d_core][0], c_core + DIRECT[d_core][1]
-        for i, j in DIRECT:
-            t_r, t_c = r_door + i, c_door + j
-            if self.is_valid_idx(t_r, t_c):
-                max_value = max(max_value, self.board[t_r][t_c])
-        self.board[r_core][c_core] = max_value
-        for i, j in DIRECT:
-            self.board[r_core + i][c_core + j] = max_value
+        stack = deque([door])
+        while stack:
+            # print(stack)
+            # print(self.dic)
+            # print(max_value)
+            door = stack.pop()
+            r, c = door
+            for i, j in DIRECT:
+                if self.board[r + i][c + j] == door or self.is_empty(r + i, c + j): # if in same block or just empty block
+                    continue
+                stack.append(self.board[r + i][c + j])
+            max_value = max(max_value, self.dic[door])
         return max_value
 
     def explore(self, c_i, d_i):
@@ -84,7 +93,7 @@ class Forest():
                 # identify this is normal end or robot is still out of forest
                 # if robot is still out of forest, clear board & return 0
                 if r_core < 4:
-                    self.clear_borad()
+                    self.clear()
                     return 0
                 # update board and return robot's reachable maximum row.
                 return self.update_board(r_core, c_core, d_core)
@@ -99,6 +108,7 @@ def main():
         c_i, d_i = map(int, input().split())
         reseult += forest.explore(c_i - 1, d_i)
         # print(reseult)
+        # print(forest.dic)
         # for i in forest.board:
         #     print(i)
     print(reseult)
