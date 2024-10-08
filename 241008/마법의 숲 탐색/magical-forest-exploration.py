@@ -48,7 +48,7 @@ class Forest():
         max_value = r_core - 1
         stack = deque([door])
         visit = [[False] * self.C for _ in range(self.R + 3)]
-        visir[door[0]][door[1]] = True
+        visit[door[0]][door[1]] = True
         while stack:
             # print(stack)
             # print(self.dic)
