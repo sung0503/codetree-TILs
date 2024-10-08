@@ -37,31 +37,30 @@ class Forest():
     
     def update_board(self, r_core, c_core, d_core, reached_bottom=None):
         global DIRECT
+
         self.count += 1
+
         door = (r_core + DIRECT[d_core][0], c_core + DIRECT[d_core][1])
         self.board[r_core][c_core] = door
         self.dic[door] = r_core - 1
         for i, j in DIRECT:
             self.board[r_core + i][c_core + j] = door
+        
         if reached_bottom:
             return self.R
-        max_value = r_core - 1
-        stack = deque([door])
+        
+        init_val = r_core - 1
         visit = [[False] * self.C for _ in range(self.R + 3)]
-        visit[door[0]][door[1]] = True
-        while stack:
-            # print(stack)
-            # print(self.dic)
-            # print(max_value)
-            door = stack.pop()
-            r, c = door
-            for i, j in DIRECT:
-                if visit[r+i][c+j] and self.board[r + i][c + j] == door or self.is_empty(r + i, c + j): # if in same block or just empty block
-                    continue
-                visit[r+i][c+j] = True
-                stack.append(self.board[r + i][c + j])
-            max_value = max(max_value, self.dic[door])
-        return max_value
+        return self.dfs(*door, visit, init_val)
+    
+    def dfs(self, r, c, visit, init_val):
+        visit[r][c] = True
+        res = init_val
+        for i, j in DIRECT:
+            if self.is_empty(r + i, c + j) and self.board[r + i][c + j] == (r, c) and visit[r+i][c+j]:
+                continue
+            res = max(res, self.dfs(r+i, c+j, visit, init_val))
+        return res
 
     def explore(self, c_i, d_i):
         # print("\nstart", c_i, d_i)
