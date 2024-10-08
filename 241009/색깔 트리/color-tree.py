@@ -31,14 +31,11 @@ class Trees():
             self.regist_node(node)
     
     def change_color(self, mid, color_to):
-        # change all node's color which in the subtree of mid
-        # bfs alorithm
         que = deque([mid])
         while que:
             cur_id = que.popleft()
             self.nodes[cur_id].color = color_to
             node = self.nodes[cur_id]
-            # que.extend(node.child_ids)
             for child_id in node.child_ids:
                 que.append(child_id)
 
