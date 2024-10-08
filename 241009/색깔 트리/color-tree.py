@@ -38,7 +38,7 @@ class Trees():
             cur_id = que.popleft()
             self.nodes[cur_id].color = color_to
             node = self.nodes[cur_id]
-            # que.extend(node.child_ids)z
+            # que.extend(node.child_ids)
             for child_id in node.child_ids:
                 que.append(child_id)
 
