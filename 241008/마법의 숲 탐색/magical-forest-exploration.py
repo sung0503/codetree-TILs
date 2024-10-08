@@ -94,12 +94,10 @@ class Forest:
         return res
 
     def explore(self, c_i, d_i):
-        # print("\nstart", c_i, d_i)
         r_core = 1
         c_core = c_i
         d_core = d_i
         while True:
-            # print(r_core, c_core, d_core)
             if self.is_reached_bottom(r_core):
                 # update board with max value R
                 return self.update_board(r_core, c_core, d_core, reached_bottom=True)
@@ -136,14 +134,9 @@ def main():
     R, C, K = map(int, input().split())
     reseult = 0
     forest = Forest(R, C)
-    # for i in forest.board:
-        # print(i)
     for k in range(K):
         c_i, d_i = map(int, input().split())
         reseult += forest.explore(c_i - 1, d_i)
-        # print(reseult)
-        # for i in forest.board:
-        #     print(i)
     print(reseult)
 
 
