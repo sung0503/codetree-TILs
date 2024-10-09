@@ -154,32 +154,32 @@ class Fight():
                 total_damage += k.damage
         return total_damage
     
-    def print_status(self):
-        for l in self.board:
-            print(l)
-        self.print_board()
+    # def print_status(self):
+    #     for l in self.board:
+    #         print(l)
+    #     self.print_board()
 
-    def print_board(self):
-        print()
-        for l in self.board_knights:
-            print(l)
+    # def print_board(self):
+    #     print()
+    #     for l in self.board_knights:
+    #         print(l)
 
 
 def main():
+    # get papram
     L, N, Q = list(map(int, input().split()))
     game = Fight(L, N)
+    # init board
     data = [list(map(int, input().split())) for _ in range(L)]
     game.init_board(data)
+    # get knights
     for n in range(N):
         knight = Knight(n + 1, *map(int, input().split()))
         game.new_knight(knight)
-
-    # game.print_status()
-
+    # do operation
     for _ in range(Q):
         game.push(*map(int, input().split()))
-        # game.print_board()
-
+    # final result
     print(game.calc_total_damage())
 
 
