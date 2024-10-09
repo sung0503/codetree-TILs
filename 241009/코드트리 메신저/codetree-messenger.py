@@ -34,17 +34,21 @@ class Chat_Tree():
     def get_pi(self, ci):
         return self.chat_list[ci].pi
 
-    def change_parent(self, c1, c2):
-        p1 = self.chat_list[c1].pi
-        p2 = self.chat_list[c2].pi
-        if self.chat_list[p1].left == c1:
-            self.chat_list[p1].left = c2
+    def change_parent(self, ci1, ci2):
+        pi1 = self.chat_list[ci1].pi
+        pi2 = self.chat_list[ci2].pi
+        # change parent id
+        self.chat_list[ci1].pi = pi2
+        self.chat_list[ci2].pi = pi1
+        # next, change parent's child (relink)
+        if self.chat_list[pi1].left == ci1:
+            self.chat_list[pi1].left = ci2
         else:
-            self.chat_list[p1].right = c2
-        if self.chat_list[p2].left == c2:
-            self.chat_list[p2].left = c1
+            self.chat_list[pi1].right = ci2
+        if self.chat_list[pi2].left == ci2:
+            self.chat_list[pi2].left = ci1
         else:
-            self.chat_list[p2].right = c1
+            self.chat_list[pi2].right = ci1
 
     def count_alarm_reachable(self, c):
         print(self.dfs(c, 0) - 1)
@@ -52,19 +56,22 @@ class Chat_Tree():
     def dfs(self, ci, threshold):
         # check this chat can propagate alarm to parent
         chat = self.chat_list[ci]
-        if not chat.alarm or chat.authority < threshold:
+        if not chat.alarm:
             return 0
         # count chat which can reach alarm to ci
-        count = 1
+        if chat.authority < threshold:
+            count = 0
+        else:
+            count = 1
         if chat.left is not None:
             count += self.dfs(chat.left, threshold + 1)
         if chat.right is not None:
             count += self.dfs(chat.right, threshold + 1)
         return count
 
-    def print_tree(self):
-        for chat in self.chat_list:
-            print(f"pi:{chat.pi} ci:{chat.ci} al:{chat.alarm} au:{chat.authority} l:{chat.left} r:{chat.right}")
+    # def print_tree(self):
+    #     for chat in self.chat_list:
+    #         print(f"pi:{chat.pi} ci:{chat.ci} al:{chat.alarm} au:{chat.authority} l:{chat.left} r:{chat.right}")
 
 
 def main():
