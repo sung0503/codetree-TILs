@@ -6,6 +6,12 @@ class Chat():
         self.authority = a
         self.left = None
         self.right = None
+    
+    def reverse_alarm(self):
+        self.alarm = not self.alarm
+    
+    def set_authority(self, power):
+        self.authority = power
 
 
 class Chat_Tree():
@@ -24,12 +30,10 @@ class Chat_Tree():
                 raise Exception("longer than 2")
 
     def change_alarm(self, ci):
-        chat = self.chat_list[ci]
-        chat.alarm = not chat.alarm
+        self.chat_list[ci].reverse_alarm()
 
     def change_authority(self, ci, power):
-        chat = self.chat_list[ci]
-        chat.authority = power
+        self.chat_list[ci].set_authority(power)
 
     def get_pi(self, ci):
         return self.chat_list[ci].pi
