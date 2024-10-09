@@ -58,7 +58,7 @@ class Fight():
                     if self.board[r - 1][c + j] == 2:
                         # check moveable
                         return
-                    nid = self.board_knights[r + h][c + j]
+                    nid = self.board_knights[r - 1][c + j]
                     if nid == 0 or nid in buff:
                         continue
                     neighbor.append(nid)
@@ -67,7 +67,7 @@ class Fight():
                     if self.board[r + h][c + j] == 2:
                         # check moveable
                         return
-                    nid = self.board_knights[r - 1][c + j]
+                    nid = self.board_knights[r + h][c + j]
                     if nid == 0 or nid in buff:
                         continue
                     neighbor.append(nid)
