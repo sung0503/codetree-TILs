@@ -18,7 +18,7 @@ class Fight():
         self.L = L
         self.board = [[2] * (L + 2) for _ in range(L + 2)]
         self.board_knights = [[0] * (L + 2) for _ in range(L + 2)]
-        self.knights = [None * (N + 1)]
+        self.knights = [None] * (N + 1)
         self.direction = [(-1, 0), (0, 1), (1, 0), (0, -1)]
     
     def init_board(self, data):
@@ -102,7 +102,7 @@ class Fight():
             self.remove_from_board_knights(nid)
             self.knights[nid].r += r_m
             self.knights[nid].c += c_m
-        for nid in buff
+        for nid in buff:
             # update damage of each moved knight
             self.update_damage(nid)
             if self.knights[nid].damage >= self.knights[nid].life:
@@ -167,7 +167,7 @@ class Fight():
 
 def main():
     L, N, Q = list(map(int, input().split()))
-    game = Fight(L)
+    game = Fight(L, N)
     data = [list(map(int, input().split())) for _ in range(L)]
     game.init_board(data)
     for n in range(N):
