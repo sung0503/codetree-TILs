@@ -50,8 +50,14 @@ class Chat_Tree():
         else:
             self.chat_list[pi2].right = ci1
 
-    def count_alarm_reachable(self, c):
-        print(self.dfs(c, 0) - 1)
+    def count_alarm_reachable(self, ci):
+        chat = self.chat_list[ci]
+        count = 0
+        if chat.left is not None:
+            count += self.dfs(chat.left, 1)
+        if chat.right is not None:
+            count += self.dfs(chat.right, 1)
+        print(count)
 
     def dfs(self, ci, threshold):
         # check this chat can propagate alarm to parent
