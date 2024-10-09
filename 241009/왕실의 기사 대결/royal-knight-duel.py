@@ -55,7 +55,7 @@ class Fight():
             w = self.knights[cur_id].w
             if d == 0:      # up
                 for j in range(self.knights[cur_id].w):
-                    if self.board[r + h][c + j] == 2:
+                    if self.board[r - 1][c + j] == 2:
                         # check moveable
                         return
                     nid = self.board_knights[r + h][c + j]
@@ -64,7 +64,7 @@ class Fight():
                     neighbor.append(nid)
             elif d == 2:    # down
                 for j in range(self.knights[cur_id].w):
-                    if self.board[r - 1][c + j] == 2:
+                    if self.board[r + h][c + j] == 2:
                         # check moveable
                         return
                     nid = self.board_knights[r - 1][c + j]
