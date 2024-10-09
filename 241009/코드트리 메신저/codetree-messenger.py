@@ -10,16 +10,16 @@ class Chat():
 
 class Chat_Tree():
     def __init__(self, n, pi_arr, au_arr):
-        self.chat_list = [None] * (n + 1)
-        self.chat_list[0] = Chat(0, 0, 0)
+        self.chat_list = [Chat(ci, 0, 0) for ci in range(n + 1)]
         for i, (pi, au) in enumerate(zip(pi_arr, au_arr)):
+            ci = i + 1
             parent = self.chat_list[pi]
-            chat = Chat(i + 1, pi, au)
-            self.chat_list[i + 1] = chat
+            self.chat_list[ci].pi = pi
+            self.chat_list[ci].authority = au
             if parent.left is None:
-                parent.left = chat.ci
+                parent.left = ci
             elif parent.right is None:
-                parent.right = chat.ci
+                parent.right = ci
             else:
                 raise Exception("longer than 2")
 
