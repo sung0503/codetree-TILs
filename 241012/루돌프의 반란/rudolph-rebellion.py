@@ -76,7 +76,7 @@ class Game():
         # return True if S2 is higher
         if Sr1 < Sr2:
             return True
-        elif Sr1 > Sc2:
+        elif Sr1 > Sr2:
             return False
         else:
             return Sc1 < Sc2
@@ -154,21 +154,27 @@ class Game():
     def play(self):
         self.recover_sturn()
         self.rudolph_stage()
+        # self.print_status()
         self.sanata_stage()
         self.survive()
         # self.print_status()
 
-    def print_status(self):
-        print("status")
-        print(self.Rr, self.Rc)
-        print(self.santas)
-        print(self.is_active)
-        print(self.is_sturn)
-        print(self.score)
-        print("board")
-        for l in self.board:
-            print(l)
-        print()
+    # def print_status(self):
+    #     print(self.Rr, self.Rc)
+    #     print(self.santas)
+    #     print(self.is_active)
+    #     print(self.is_sturn)
+    #     print(self.score)
+    #     for l in self.board:
+    #         for i in l:
+    #             if i == -1:
+    #                 print(" ", end=', ')
+    #             elif i == -2:
+    #                 print("R", end=', ')
+    #             else:
+    #                 print(i, end = ', ')
+    #         print()    
+    #     print()
     
     def print_score(self):
         print(" ".join(str(i) for i in self.score))
@@ -180,6 +186,7 @@ def main():
     game = Game(N, P, C, D, Rr, Rc)
     # game.print_status()
     for m in range(M):
+        # print(f"STAGE{m}")
         game.play()
         if game.count_active == 0:
             break
